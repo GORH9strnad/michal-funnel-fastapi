@@ -7,14 +7,14 @@ from src.functions.token import create_token, token_exists
 
 router = APIRouter()
 
-@router.get("/check-token/{token}")
+@router.get("/check/{token}")
 async def check_token(token: str, db: AsyncSession = Depends(get_db)):
     print(f"Type of db: {type(db)}")
     exists = await token_exists(token, db)
     return {"exists": exists}
 
 
-@router.post("/create-session")
+@router.post("/create")
 async def create_session(db: AsyncSession = Depends(get_db)):
     token = await create_token(db)
     
