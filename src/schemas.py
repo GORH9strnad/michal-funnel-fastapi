@@ -36,3 +36,24 @@ class Registration(BaseModel):
         if not re.match(r'\d$', v):
             raise ValueError('Phone number must be between 9 and 15 digits and can include country code')
         return v
+    
+class Name(BaseModel):
+    name: constr(min_length=0, max_length=50)
+
+    @validator('name')
+    def validate_full_name(cls, v):
+        if not re.match(r'^[A-Za-zÁáČčĎďÉěÍíŇňÓóŘřŠšŤťÚúÝýŽž]+$', v):
+            raise ValueError('Jméno musí obsahovat pouze písmena a mezery!')
+        return v
+
+class Email(BaseModel):
+    email: EmailStr
+
+class Phone(BaseModel):
+    phone: constr(min_length=9, max_length=9)
+
+    @validator('phone')
+    def validate_phone(cls, v):
+        if not re.match(r'\d$', v):
+            raise ValueError('Telefonní číslo musí obsahovat 9 číslic!')
+        return v

@@ -22,6 +22,10 @@ async def get_selected_course(token: str, db: AsyncSession = Depends(get_db)):
         .where(FunnelSessions.token == token)
     )
     course = result.scalar()
+
+    if course is None:
+        raise HTTPException(status_code=404, detail=f"/selected/{token}: no course selected for session with token:{token}")
+
     return {"course": course}
 
 @router.put("/select/{token}/{course_id}")

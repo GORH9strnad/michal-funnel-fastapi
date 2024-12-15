@@ -4,9 +4,9 @@ import socketio
 from src.database import engine, Base
 from src.routes.session import router as session_router
 from src.routes.course import router as course_router
-from src.routes.registration import router as registration_router
+from src.routes.contact import router as contact_router
+from src.sio import sio
 
-sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 app = FastAPI()
 
 socket_app = socketio.ASGIApp(sio, app)
@@ -19,28 +19,16 @@ async def startup_event():
 
 app.include_router(session_router, prefix="/session")
 app.include_router(course_router, prefix="/course")
-app.include_router(registration_router, prefix="/registration")
+app.include_router(contact_router, prefix="/contact")
 
-# Add CORS middleware if needed
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace "*" with your allowed origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Define Socket.IO events
-@sio.event
-async def connect(sid, environ):
-    print(f"Client connected: {sid}")
-    await sio.emit("message", {"data": "Welcome!"}, to=sid)
-
-@sio.event
-async def disconnect(sid):
-    print(f"Client disconnected: {sid}")
-
-@sio.event
-async def message(sid, data):
-    print(f"Message from {sid}: {data}")
-    await sio.emit("response", {"data": f"Server received: {data}"}, to=sid)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(socket_app, host="0.0.0.0", port=8000)
