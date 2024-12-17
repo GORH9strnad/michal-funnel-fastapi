@@ -29,7 +29,7 @@ async def create_session(data: Dict[str, Any] = None, db: AsyncSession = Depends
     new_session = FunnelSessions(token=token)
     db.add(new_session)
     await db.commit()
-    new_registration = FunnelRegistrations(session_id=new_session.id, course_id=selected_course["id"], name=name, email=email, phone=phone, children_count=children_count, adults_count=adults_count)
+    new_registration = FunnelRegistrations(session_id=new_session.id, course_id=selected_course["id"], name=name.strip(), email=email.strip(), phone=phone.strip(), children_count=children_count, adults_count=adults_count)
     db.add(new_registration)
     await db.commit()
     

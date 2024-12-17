@@ -5,6 +5,7 @@ from src.database import engine, Base
 from src.routes.session import router as session_router
 from src.routes.course import router as course_router
 from src.routes.contact import router as contact_router
+from.routes.participant import router as participant_router
 from src.sio import sio
 
 app = FastAPI()
@@ -20,6 +21,7 @@ async def startup_event():
 app.include_router(session_router, prefix="/session")
 app.include_router(course_router, prefix="/course")
 app.include_router(contact_router, prefix="/contact")
+app.include_router(participant_router, prefix="/participant")
 
 app.add_middleware(
     CORSMiddleware,

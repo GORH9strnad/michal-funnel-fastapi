@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import update
 from sqlalchemy.orm import joinedload
 from src.database import get_db
 from src.models import FunnelRegistrations, FunnelSessions
@@ -16,33 +17,95 @@ async def get_contact(token: str, db: AsyncSession = Depends(get_db)):
         .join(FunnelSessions, FunnelRegistrations.session_id == FunnelSessions.id)
         .where(FunnelSessions.token == token)
     )
-    contact = result.all()
+    contact = result.fetchone()
 
     if not contact:
-        HTTPException(status_code=404, detail=f"/contact/contact/{token}: no contact found for session with token:{token}")
+        raise HTTPException(status_code=404, detail=f"/contact/contact/{token}: no contact found for session with token:{token}")
 
-    return {"contact": contact}
+    return {"contact": {
+        "name": contact.name,
+        "email": contact.email,
+        "phone": contact.phone,
+    }}
 
-@sio.on("validate-name")
-async def handle_validate_name(sid, name):
+@sio.on("name")
+async def handle_validate_name(sid, data, db: AsyncSession = None):
+    if db is None:
+        db = await get_db().__anext__()
+
+    name = data.get("name")
+    token = data.get("token")
+
     try:
         validate_name(name.strip())
-        await sio.emit("validate-name", {"valid": True}, to=sid)
-    except ValueError as e:
-        await sio.emit("validate-name", {"valid": False, "error": str(e)}, to=sid)
+        await sio.emit("name", {"valid": True}, to=sid)
 
-@sio.on("validate-email")
-async def handle_validate_email(sid, email):
+        if token:
+            subquery = (
+                select(FunnelSessions.id)
+                .where(FunnelSessions.token == token)
+                .scalar_subquery()
+            )
+            await db.execute(
+                update(FunnelRegistrations)
+                .where(FunnelRegistrations.session_id == subquery)
+                .values(name=name.strip())
+            )
+
+            await db.commit()
+
+    except ValueError as e:
+        await sio.emit("name", {"valid": False, "error": str(e)}, to=sid)
+
+@sio.on("email")
+async def handle_validate_email(sid, data, db: AsyncSession = None):
+    if db is None:
+        db = await get_db().__anext__()
+
+    email = data.get("email")
+    token = data.get("token")
+
     try:
         validate_email(email.strip())
-        await sio.emit("validate-email", {"valid": True}, to=sid)
-    except ValueError as e:
-        await sio.emit("validate-email", {"valid": False, "error": str(e)}, to=sid)
+        await sio.emit("email", {"valid": True}, to=sid)
 
-@sio.on("validate-phone")
-async def handle_validate_phone(sid, phone):
+        if token:
+            await db.execute(
+                update(FunnelRegistrations)
+                .where(
+                    FunnelRegistrations.session_id == select(FunnelSessions.id)
+                    .where(FunnelSessions.token == token)
+                    .scalar_subquery()
+                )
+                .values(email=email.strip())
+            )
+            await db.commit()
+    except ValueError as e:
+        await sio.emit("email", {"valid": False, "error": str(e)}, to=sid)
+
+
+@sio.on("phone")
+async def handle_validate_phone(sid, data, db: AsyncSession = None):
+    if db is None:
+        db = await get_db().__anext__()
+
+    phone = data.get("phone")
+    token = data.get("token")
+
     try:
         validate_phone(phone.replace(" ", ""))
-        await sio.emit("validate-phone", {"valid": True}, to=sid)
+        await sio.emit("phone", {"valid": True}, to=sid)
+
+        if token:
+            await db.execute(
+                update(FunnelRegistrations)
+                .where(
+                    FunnelRegistrations.session_id == select(FunnelSessions.id)
+                    .where(FunnelSessions.token == token)
+                    .scalar_subquery()
+                )
+                .values(phone=phone.replace(" ", ""))
+            )
+            await db.commit()
     except ValueError as e:
-        await sio.emit("validate-phone", {"valid": False, "error": str(e)}, to=sid)
+        await sio.emit("phone", {"valid": False, "error": str(e)}, to=sid)
