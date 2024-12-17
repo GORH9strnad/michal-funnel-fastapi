@@ -26,12 +26,12 @@ class FunnelRegistrations(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey('funnel_sessions.id'), nullable=False)
-    course_id = Column(Integer, ForeignKey('funnel_courses.id'), nullable=False)
-    name = Column(String, nullable=False)
-    email = Column(String, nullable=False)
-    phone = Column(String, nullable=False)
-    children_count = Column(Integer, nullable=False)
-    adults_count = Column(Integer, nullable=False)
+    course_id = Column(Integer, ForeignKey('funnel_courses.id'), nullable=True)
+    name = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    children_count = Column(Integer, nullable=True)
+    adults_count = Column(Integer, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     course = relationship("FunnelCourses", foreign_keys=[course_id])
