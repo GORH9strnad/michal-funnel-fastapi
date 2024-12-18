@@ -1,1 +1,1 @@
-web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker src.main:app
+web: uvicorn src.main:socket_app --host 0.0.0.0 --port ${PORT:-8000}
