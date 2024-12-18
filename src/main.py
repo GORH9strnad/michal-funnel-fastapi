@@ -25,7 +25,7 @@ app.include_router(participant_router, prefix="/participant")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://funnel-frontend-b539334e0613.herokuapp.com/"],
+    allow_origins=["https://funnel-frontend-b539334e0613.herokuapp.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
