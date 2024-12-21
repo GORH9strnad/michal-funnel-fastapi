@@ -8,27 +8,17 @@ DATABASE_URL = (
     "@c724r43q8jp5nk.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com:5432/d41fnk62r8b5ok"
 )
 
-# Create an async engine
-engine = create_async_engine(DATABASE_URL, echo=True, pool_size=10, max_overflow=10)
+engine = create_async_engine(DATABASE_URL, echo=True, pool_size=20, max_overflow=0)
 
-# Session factory for async
 async_session = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False, autoflush=False)
 
-# Base class for models
 Base = declarative_base()
 
-# Dependency to get the database session
 async def get_db():
     async with async_session() as session:
         try:
-            # Yield the session for use in DB operations
             yield session
-            # Commit any pending changes
             await session.commit()
         except SQLAlchemyError as e:
-            # Rollback the session in case of an exception
             await session.rollback()
-            raise e  # Re-raise the exception for handling elsewhere
-        finally:
-            # Close the session (ensures the connection is returned to the pool)
-            await session.close()
+            raise e

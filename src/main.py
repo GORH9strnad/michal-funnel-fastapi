@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
-import os  # Import os for environment variables
+import os
+import src.routes.price
 from src.database import engine, Base
 from src.routes.session import router as session_router
 from src.routes.course import router as course_router
@@ -11,16 +12,13 @@ from src.sio import sio
 
 app = FastAPI()
 
-# Initialize the Socket.IO ASGI application
 socket_app = socketio.ASGIApp(sio, app)
 
-# Include your FastAPI routers (HTTP routes)
 app.include_router(session_router, prefix="/session")
 app.include_router(course_router, prefix="/course")
 app.include_router(contact_router, prefix="/contact")
 app.include_router(participant_router, prefix="/participant")
 
-# CORS middleware to allow frontend access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://funnel-frontend-b539334e0613.herokuapp.com", "http://localhost:3000"],
@@ -29,7 +27,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Socket.IO event handling
 @sio.event
 async def connect(sid, environ):
     print("Client connected", sid)
