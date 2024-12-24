@@ -1,5 +1,5 @@
 pricing_data = {
-    "base_price": 15201,
+    "base_price": 15200,
     "discounts": [
         {"min_participants": 4, "discount": 4101},
     ]
