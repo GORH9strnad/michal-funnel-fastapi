@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, Double, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from src.database import Base
@@ -20,6 +20,21 @@ class FunnelCourses(Base):
     location = Column(String, nullable=False)
     hill = Column(String, nullable=False)
     img = Column(String, nullable=False)
+   
+class FunnelPricing(Base):
+  __tablename__ = "funnel_pricing"
+  
+  id Column(Integer, primary_key=True, index=True)
+  course_id = Column(Integer, ForeignKey("funnel_pricing.id"), nullable=False)
+  base_price = Column(Double, nullable=False)
+  
+class FunnelDiscounts(Base):
+  __tablename__ = "funnel_discounts"
+  
+  id Column(Integer, primary_key=True, index=True)
+  pricing_id = Column(Integer, ForeignKey("funnel_pricing.id"), nullable=False)
+  min_participants = Column(Integer, nullable=False)
+  discount = Column(Double, nullable=False)
 
 class FunnelRegistrations(Base):
     __tablename__ = "funnel_registrations"
