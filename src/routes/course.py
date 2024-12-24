@@ -2,19 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update
-from src.database import get_db
+from src.database import get_db_session
 from src.models import FunnelCourses, FunnelSessions, FunnelRegistrations
 
 router = APIRouter()
 
 @router.get("/courses")
-async def get_courses(db: AsyncSession = Depends(get_db)):
+async def get_courses(db: AsyncSession = Depends(get_db_session)):
     courses = await db.execute(select(FunnelCourses))
     courses = courses.scalars().all()
     return {"courses": courses}
 
 @router.get("/selected/{token}")
-async def get_selected_course(token: str, db: AsyncSession = Depends(get_db)):
+async def get_selected_course(token: str, db: AsyncSession = Depends(get_db_session)):
     result = await db.execute(
         select(FunnelCourses)
         .join(FunnelRegistrations, FunnelCourses.id == FunnelRegistrations.course_id)
@@ -29,7 +29,7 @@ async def get_selected_course(token: str, db: AsyncSession = Depends(get_db)):
     return {"course": course}
 
 @router.put("/select/{token}/{course_id}")
-async def select_course(token: str, course_id: int, db: AsyncSession = Depends(get_db)):
+async def select_course(token: str, course_id: int, db: AsyncSession = Depends(get_db_session)):
     result = await db.execute(
         select(FunnelSessions)
         .where(FunnelSessions.token == token)

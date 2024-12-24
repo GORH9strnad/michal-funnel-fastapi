@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update
 from sqlalchemy.orm import joinedload
-from src.database import get_db
+from src.database import get_db_session
 from src.models import FunnelRegistrations, FunnelSessions
 from src.functions.contact import validate_name, validate_email, validate_phone
 from src.sio import sio
@@ -11,7 +11,7 @@ from src.sio import sio
 router = APIRouter()
 
 @router.get("/contact/{token}")
-async def get_contact(token: str, db: AsyncSession = Depends(get_db)):
+async def get_contact(token: str, db: AsyncSession = Depends(get_db_session)):
     result = await db.execute(
         select(FunnelRegistrations.name, FunnelRegistrations.email, FunnelRegistrations.phone)
         .join(FunnelSessions, FunnelRegistrations.session_id == FunnelSessions.id)
@@ -31,7 +31,7 @@ async def get_contact(token: str, db: AsyncSession = Depends(get_db)):
 @sio.on("name")
 async def handle_validate_name(sid, data, db: AsyncSession = None):
     if db is None:
-        db = await get_db().__anext__()
+        db = await get_db_session().__anext__()
 
     name = data.get("name")
     token = data.get("token")
@@ -60,7 +60,7 @@ async def handle_validate_name(sid, data, db: AsyncSession = None):
 @sio.on("email")
 async def handle_validate_email(sid, data, db: AsyncSession = None):
     if db is None:
-        db = await get_db().__anext__()
+        db = await get_db_session().__anext__()
 
     email = data.get("email")
     token = data.get("token")
@@ -87,7 +87,7 @@ async def handle_validate_email(sid, data, db: AsyncSession = None):
 @sio.on("phone")
 async def handle_validate_phone(sid, data, db: AsyncSession = None):
     if db is None:
-        db = await get_db().__anext__()
+        db = await get_db_session().__anext__()
 
     phone = data.get("phone")
     token = data.get("token")

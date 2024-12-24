@@ -1,8 +1,7 @@
 pricing_data = {
-    "base_price": 20000,
+    "base_price": 15200,
     "discounts": [
-        {"min_participants": 3, "discount": 0.24},
-        {"min_participants": 5, "discount": 0.44505},
+        {"min_participants": 4, "discount": 4101},
     ]
 }
 
@@ -12,7 +11,7 @@ def calculate_price(adults: int, children: int) -> int:
 
     for discount in pricing_data["discounts"]:
         if participants >= discount["min_participants"]:
-            price = pricing_data["base_price"] *  (1 - discount["discount"])
+            price = pricing_data["base_price"] - discount["discount"]
         else:
             break
 
